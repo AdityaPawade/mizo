@@ -40,7 +40,7 @@ public class MizoJanusGraphHBaseRelationParser implements IMizoRelationParser {
     private Object propertyValue;
 
     /**
-     * The type of this relation, in a Titan object
+     * The type of this relation, in a Janus Graph object
      */
     private MizoJanusGraphRelationType relationType;
 
@@ -72,7 +72,7 @@ public class MizoJanusGraphHBaseRelationParser implements IMizoRelationParser {
     private long otherVertexId;
 
     /**
-     * Titan internal object for ID reading and writing
+     * Janus Graph internal object for ID reading and writing
      */
 
     private final static IDManager ID_MANAGER = new IDManager(NumberUtil.getPowerOf2(32));

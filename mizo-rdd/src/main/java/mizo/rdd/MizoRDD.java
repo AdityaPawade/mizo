@@ -137,9 +137,9 @@ public abstract class MizoRDD<TReturn> extends RDD<TReturn> implements Serializa
     }
 
     /**
-     * Given a path for Titan config file, connects and gets the internal Titan types,
-     * converting them to MizoTitanRelationTypes mapped by type-ids
-     * @param janusGraphConfigPath Path to Titan's config path
+     * Given a path for Janus Graph config file, connects and gets the internal Janus Graph types,
+     * converting them to MizoJanus GraphRelationTypes mapped by type-ids
+     * @param janusGraphConfigPath Path to Janus Graph's config path
      * @return Mapping between relation type-ids to InternalRelationType instances
      */
     protected static HashMap<Long, MizoJanusGraphRelationType> loadRelationTypes(String janusGraphConfigPath) {

@@ -74,7 +74,7 @@ public class MizoRegionFamilyCellsIterator implements Iterator<Cell> {
 
     /**
      * Creates an ascending-sorted cells iterator, wrapped by a peeking iterator
-     * @param regionEdgesFamilyPath Path of the HBase directory that contains Titan's Edges column-family
+     * @param regionEdgesFamilyPath Path of the HBase directory that contains Janus Graph's Edges column-family
      * @return Ascending-sorted cells iterator, wrapped by a peeking iterator
      */
     protected PeekingIterator<Cell> createSortedHFilesIterator(String regionEdgesFamilyPath) throws IOException {

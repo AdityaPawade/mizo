@@ -1,17 +1,17 @@
 # Mizo
-### Super-fast Spark RDD for Titan Graph Database on HBase
+### Super-fast Spark RDD for Janus Graph Graph Database on HBase
 
-Mizo enables you to perform Spark transformations and actions over a Titan DB, under the following circumstances:
+Mizo enables you to perform Spark transformations and actions over a Janus Graph DB, under the following circumstances:
   - It runs with an HBase backend
   - Its HBase internal data files (HFiles) are accessible via the network
 
-Mizo was originally developed due to a lack of an efficient and quick OLAP engine on top of Titan.
-OLAP over Titan was meant to be solved by libraries such as Faunus and Tinkerpop's SparkGraphComputer, but neither of the solutions can be used in production - the former is buggy and misses data, and the latter is generally a non-efficient mechanism that spills lots of data.
+Mizo was originally developed due to a lack of an efficient and quick OLAP engine on top of Janus Graph.
+OLAP over Janus Graph was meant to be solved by libraries such as Faunus and Tinkerpop's SparkGraphComputer, but neither of the solutions can be used in production - the former is buggy and misses data, and the latter is generally a non-efficient mechanism that spills lots of data.
 Moreover, both of the solutions rely on HBase API to retrieve the Graph data in bulk, but this API is by itself very slow. Mizo relies on HBase internal data files (called HFiles), parses them and builds vertices and edges from them - without interacting with HBase API.
 
 ### In production
 
-Mizo was tested in production on a Titan Graph with a about ten billion vertices and hundreds of billions of edges.
+Mizo was tested in production on a Janus Graph Graph with a about ten billion vertices and hundreds of billions of edges.
 Using a Spark cluster with total of 100 cores and 150 GB of RAM (each Spark worker gets 1 core and 1.5 GB of RAM) it takes about 8 hours for Mizo to iterate over a graph with 2000 HBase regions.
 
 ### Limitations
@@ -23,7 +23,7 @@ You can run Mizo on a working HBase cluster. The problem here is that HBase perf
 
 ### RDDs and customization
 
-Mizo supports different levels of customization -- by default, it'll parse every vertex and edge. More accurately, due to Titan's internal data structure, which keeps each edge twice - one time on the 'in' vertex and another time on the 'out' vertex, Mizo will return each edge twice (on time when parsing the HBase region containing the 'in' vertex, and another time while parsing the 'out' vertex). You can prevent this by customizing Mizo to parse only in/out edges.
+Mizo supports different levels of customization -- by default, it'll parse every vertex and edge. More accurately, due to Janus Graph's internal data structure, which keeps each edge twice - one time on the 'in' vertex and another time on the 'out' vertex, Mizo will return each edge twice (on time when parsing the HBase region containing the 'in' vertex, and another time while parsing the 'out' vertex). You can prevent this by customizing Mizo to parse only in/out edges.
 
 Mizo exposes two types of RDDs:
   - `MizoVerticesRDD` is an RDD of vertices, with their in and/or out edges and their properties. It is much more heavy in terms of memory, because each vertex returned also contains a collection of edges.
@@ -67,7 +67,7 @@ public class MizoEdgesCounter {
         SparkContext sc = new SparkContext(conf);
 
         long count = new MizoBuilder()
-                .titanConfigPath("titan-graph.properties")
+                .janusGraphConfigPath("janus-graph.properties")
                 .regionDirectoriesPath("hdfs://my-graph/*/e")
                 .parseInEdges(v -> false)
                 .edgesRDD(sc)
@@ -106,7 +106,7 @@ public class MizoVerticesCounter {
         SparkContext sc = new SparkContext(conf);
 
         long count = new MizoBuilder()
-                .titanConfigPath("titan-graph.properties")
+                .janusGraphConfigPath("janus-graph.properties")
                 .regionDirectoriesPath("hdfs://my-graph/*/e")
                 .parseInEdges(v -> false)
                 .verticesRDD(sc)

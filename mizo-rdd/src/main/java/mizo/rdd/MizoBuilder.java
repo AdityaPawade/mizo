@@ -41,7 +41,7 @@ public class MizoBuilder implements IMizoRDDConfig {
         PropertiesConfiguration mizoConfig = new PropertiesConfiguration(mizoConfigPath);
 
         regionDirectoriesPath(mizoConfig.getString("region-directories-path"));
-        titanConfigPath(mizoConfig.getString("titan-config-path"));
+        janusGraphConfigPath(mizoConfig.getString("janus-graph-config-path"));
         logConfigPath(mizoConfig.getString("log-config-path"));
     }
 
@@ -78,7 +78,7 @@ public class MizoBuilder implements IMizoRDDConfig {
         return this;
     }
 
-    public MizoBuilder titanConfigPath(String path) {
+    public MizoBuilder janusGraphConfigPath(String path) {
         this.janusGraphConfigPath = path;
 
         return this;

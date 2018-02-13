@@ -66,7 +66,7 @@ public class MizoEdge implements Serializable {
     }
 
     /**
-     * Creates a Titan Edge Id of this edge
+     * Creates a Janus Graph Edge Id of this edge
      */
     public String janusId() {
         return RelationIdentifier.get(new long[]{
