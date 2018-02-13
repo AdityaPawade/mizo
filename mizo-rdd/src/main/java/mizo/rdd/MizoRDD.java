@@ -4,21 +4,13 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.thinkaurelius.titan.core.TitanFactory;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.attribute.Contain;
-import com.thinkaurelius.titan.diskstorage.BackendException;
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
-import com.thinkaurelius.titan.graphdb.internal.InternalRelationType;
-import com.thinkaurelius.titan.graphdb.internal.TitanSchemaCategory;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.types.system.BaseKey;
 import mizo.core.IMizoRDDConfig;
 import mizo.core.IMizoRelationParser;
-import mizo.core.MizoTitanRelationType;
+import mizo.core.MizoJanusGraphRelationType;
 import mizo.hbase.MizoRegionFamilyCellsIterator;
-import mizo.hbase.MizoTitanHBaseRelationParser;
+import mizo.hbase.MizoJanusGraphHBaseRelationParser;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.util.FSUtils;
@@ -27,6 +19,15 @@ import org.apache.spark.Partition;
 import org.apache.spark.SparkContext;
 import org.apache.spark.TaskContext;
 import org.apache.spark.rdd.RDD;
+import org.janusgraph.core.JanusGraph;
+import org.janusgraph.core.JanusGraphFactory;
+import org.janusgraph.core.attribute.Contain;
+import org.janusgraph.diskstorage.BackendException;
+import org.janusgraph.graphdb.database.StandardJanusGraph;
+import org.janusgraph.graphdb.internal.InternalRelationType;
+import org.janusgraph.graphdb.internal.JanusGraphSchemaCategory;
+import org.janusgraph.graphdb.transaction.StandardJanusGraphTx;
+import org.janusgraph.graphdb.types.system.BaseKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.collection.mutable.ArrayBuffer;
@@ -52,7 +53,7 @@ public abstract class MizoRDD<TReturn> extends RDD<TReturn> implements Serializa
     /**
      * Mapping between relation-type-id to relation-type objects
      */
-    protected Map<Long, MizoTitanRelationType> relationTypes;
+    protected Map<Long, MizoJanusGraphRelationType> relationTypes;
 
     /**
      * Config and tuning object for Mizo
@@ -68,7 +69,7 @@ public abstract class MizoRDD<TReturn> extends RDD<TReturn> implements Serializa
 
         this.config = config;
         this.regionsPaths = getRegionsPaths(config.regionDirectoriesPath());
-        this.relationTypes = loadRelationTypes(config.titanConfigPath());
+        this.relationTypes = loadRelationTypes(config.janusGraphConfigPath());
     }
 
     @Override
@@ -84,8 +85,11 @@ public abstract class MizoRDD<TReturn> extends RDD<TReturn> implements Serializa
      */
     protected Iterator<IMizoRelationParser> createRegionRelationsIterator(String regionEdgesFamilyPath) {
         try {
-            return Iterators.transform(new MizoRegionFamilyCellsIterator(regionEdgesFamilyPath),
-                    cell -> new MizoTitanHBaseRelationParser(this.relationTypes, cell));
+            MizoRegionFamilyCellsIterator cellsIterator = new MizoRegionFamilyCellsIterator(regionEdgesFamilyPath);
+
+            return Iterators.transform(cellsIterator,
+                    cell -> new MizoJanusGraphHBaseRelationParser(this.relationTypes, cell));
+
         } catch (IOException e) {
             log.error("Failed to initialized region relations reader due to inner exception: {}", e);
 
@@ -121,7 +125,8 @@ public abstract class MizoRDD<TReturn> extends RDD<TReturn> implements Serializa
             Path regionDirectory = new Path(regionDirectoryPaths);
             FileSystem fs = regionDirectory.getFileSystem(new Configuration());
 
-            return Arrays.stream(fs.globStatus(regionDirectory, new FSUtils.RegionDirFilter(fs)))
+            FileStatus[] fileStatuses = fs.globStatus(regionDirectory, new FSUtils.RegionDirFilter(fs));
+            return Arrays.stream(fileStatuses)
                     .map(file -> file.getPath().toString())
                     .collect(Collectors.toList());
         } catch (IOException e) {
@@ -134,27 +139,27 @@ public abstract class MizoRDD<TReturn> extends RDD<TReturn> implements Serializa
     /**
      * Given a path for Titan config file, connects and gets the internal Titan types,
      * converting them to MizoTitanRelationTypes mapped by type-ids
-     * @param titanConfigPath Path to Titan's config path
+     * @param janusGraphConfigPath Path to Titan's config path
      * @return Mapping between relation type-ids to InternalRelationType instances
      */
-    protected static HashMap<Long, MizoTitanRelationType> loadRelationTypes(String titanConfigPath) {
-        TitanGraph g = TitanFactory.open(titanConfigPath);
-        StandardTitanTx tx = (StandardTitanTx)g.buildTransaction().readOnly().start();
+    protected static HashMap<Long, MizoJanusGraphRelationType> loadRelationTypes(String janusGraphConfigPath) {
+        JanusGraph g = JanusGraphFactory.open(janusGraphConfigPath);
+        StandardJanusGraphTx tx = (StandardJanusGraphTx)g.buildTransaction().readOnly().start();
 
-        HashMap<Long, MizoTitanRelationType> relations = Maps.newHashMap();
+        HashMap<Long, MizoJanusGraphRelationType> relations = Maps.newHashMap();
 
         tx.query()
-                .has(BaseKey.SchemaCategory, Contain.IN, Lists.newArrayList(TitanSchemaCategory.values()))
+                .has(BaseKey.SchemaCategory, Contain.IN, Lists.newArrayList(JanusGraphSchemaCategory.values()))
                 .vertices()
                 .forEach(v -> {
                     if (v instanceof InternalRelationType)
-                        relations.put(v.longId(), new MizoTitanRelationType((InternalRelationType)v));
+                        relations.put(v.longId(), new MizoJanusGraphRelationType((InternalRelationType)v));
                 });
 
         tx.close();
 
         try {
-            ((StandardTitanGraph)g).getBackend().close();
+            ((StandardJanusGraph)g).getBackend().close();
         } catch (BackendException e) {
             e.printStackTrace();
         }

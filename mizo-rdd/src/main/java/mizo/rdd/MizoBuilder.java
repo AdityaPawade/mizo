@@ -24,7 +24,7 @@ public class MizoBuilder implements IMizoRDDConfig {
     private static final Logger log = LoggerFactory.getLogger(MizoBuilder.class);
 
     private String regionDirectoriesPath;
-    private String titanConfigPath;
+    private String janusGraphConfigPath;
     private String logConfigPath;
 
     private Function<MizoEdge, Boolean> filterEdge = e -> true;
@@ -79,7 +79,7 @@ public class MizoBuilder implements IMizoRDDConfig {
     }
 
     public MizoBuilder titanConfigPath(String path) {
-        this.titanConfigPath = path;
+        this.janusGraphConfigPath = path;
 
         return this;
     }
@@ -154,8 +154,8 @@ public class MizoBuilder implements IMizoRDDConfig {
     }
 
     @Override
-    public String titanConfigPath() {
-        return titanConfigPath;
+    public String janusGraphConfigPath() {
+        return janusGraphConfigPath;
     }
 
     @Override

@@ -10,7 +10,7 @@ import java.io.Serializable;
  */
 public interface IMizoRDDConfig extends Serializable {
     String regionDirectoriesPath();
-    String titanConfigPath();
+    String janusGraphConfigPath();
     String logConfigPath();
 
     Function<MizoVertex, Boolean> parseVertexProperties();

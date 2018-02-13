@@ -1,6 +1,6 @@
 package mizo.hbase.patches;
 
-import com.thinkaurelius.titan.diskstorage.util.ReadArrayBuffer;
+import org.janusgraph.diskstorage.util.ReadArrayBuffer;
 
 /**
  * Created by imrihecht on 12/10/16.

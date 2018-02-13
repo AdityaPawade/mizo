@@ -1,7 +1,7 @@
 package mizo.core;
 
 import com.google.common.collect.Maps;
-import com.thinkaurelius.titan.graphdb.relations.RelationIdentifier;
+import org.janusgraph.graphdb.relations.RelationIdentifier;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class MizoEdge implements Serializable {
     /**
      * Creates a Titan Edge Id of this edge
      */
-    public String titanId() {
+    public String janusId() {
         return RelationIdentifier.get(new long[]{
                 relationId,
                 isOutEdge ? vertex.id() : otherVertexId,

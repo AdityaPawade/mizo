@@ -1,4 +1,6 @@
+import mizo.core.MizoEdge;
 import mizo.rdd.MizoBuilder;
+import mizo.rdd.MizoRDD;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 
@@ -23,9 +25,18 @@ public class MizoEdgesCounter {
 
         SparkContext sc = new SparkContext(conf);
 
+        MizoRDD<MizoEdge> edgeRDD = new MizoBuilder()
+//            .logConfigPath("log4j.properties")
+            .titanConfigPath("/tmp/janus.properties")
+            .regionDirectoriesPath("hdfs://10.32.181.180/apps/hbase/data/data/default/janus-test-graph/*/e")
+            .parseInEdges(v -> false)
+            .edgesRDD(sc);
+
+        Object edges = edgeRDD.take(100);
+
         long count = new MizoBuilder()
                 .logConfigPath("log4j.properties")
-                .titanConfigPath("titan-graph.properties")
+                .titanConfigPath("janus.properties")
                 .regionDirectoriesPath("hdfs://my-graph/*/e")
                 .parseInEdges(v -> false)
                 .edgesRDD(sc)
